@@ -1,17 +1,10 @@
 var fs = require('fs')
 const net = require('net')
-const { setData, delData, getData, expData, saveData } = require("./apis.js");
+const { setData, delData, getData, expData, saveData, loadData, lpush, lrange, lpop } = require("./apis.js");
 
 const server = net.createServer(socket =>{
     socket.write("Welcome to Baljeet's Database\nRun your command here >>>  ")
-    fs.readFile("./db.json", "utf8", (err, jsonString) => {
-        if (err) {
-          console.log("File read failed:", err);
-          return;
-        }
-        let new_json = JSON.parse(jsonString)
-        database = new_json
-      });
+    loadData()
     socket.on("data", data => {
         let var1 = data.toString()
         if(var1[0] ==='S' && var1[1] === 'E' && var1[2] ==='T'){
@@ -29,6 +22,17 @@ const server = net.createServer(socket =>{
         }
         else if(var1[0] ==='S' && var1[1] === 'A' && var1[2] ==='V' && var1[3] ==='E'){
             socket.write(saveData(var1))
+        }
+        else if(var1[0] ==='l' && var1[1] === 'p' && var1[2] ==='u' && var1[3] ==='s' && var1[4] ==='h'){
+            socket.write(lpush(var1))
+        }
+        else if(var1[0] ==='l' && var1[1] === 'p' && var1[2] ==='o' && var1[3] ==='p'){
+            socket.write(lpop(var1))
+            socket.write("\n>>> ")
+        }
+        else if(var1[0] ==='l' && var1[1] === 'r' && var1[2] ==='a' && var1[3] ==='n' && var1[4] ==='g' && var1[5] === 'e'){
+            socket.write(lrange(var1))
+            socket.write(">>> ")
         }
         else if(var1[0] ==='E' && var1[1] === 'X' && var1[2] ==='I' && var1[3] ==='T'){
             socket.end("You exited succesfully and ")

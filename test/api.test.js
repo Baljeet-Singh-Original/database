@@ -1,5 +1,5 @@
 const db = require("./db");
-const { setData, delData, getData, expData, saveData } = require("../apis");
+const { setData, delData, getData, expData, saveData, lpush, lrange, lpop } = require("../apis");
 
 // Setup connection to the database
 beforeAll(async () => await db.connect());
@@ -10,8 +10,18 @@ afterAll(async () => await db.close());
 
 describe("Testing of SET api", () => {
   it("it should save the data in Ram.", async () => {
-    let var1 = "SET hello:testing"
-    const res = await setData(var1);
+    let var1 = "SET hello testing"
+    const res = setData(var1);
+    expect(res).toEqual("Data saved in Database.\n>>> ");
+  });
+})
+
+// set the data as a list
+
+describe("Testing of lpush api", () => {
+  it("it should save the data in list.", async () => {
+    let var1 = "lpush hello testing"
+    const res = lpush(var1);
     expect(res).toEqual("Data saved in Database.\n>>> ");
   });
 })
@@ -20,9 +30,11 @@ describe("Testing of SET api", () => {
 
 describe("Testing of GET api", () => {
   it("it should return data not exists yet.", async () => {
+    let var2 = "SET hello Hii"
+    setData(var2)
     let var1 = "GET hello"
-    const res = await getData(var1);
-    expect(res).toEqual("Data not exists.");
+    let res = await getData(var1);
+    expect(res).toEqual("Hii");
   });
 })
 
@@ -30,8 +42,8 @@ describe("Testing of GET api", () => {
 
 describe("Testing of EXP api", () => {
   it("it should save the expire time of data.", async () => {
-    let var1 = "EXP hello:30000"
-    const res = await expData(var1);
+    let var1 = "EXP hello 30000"
+    const res = expData(var1);
     expect(res).toEqual("Expire-time saved in Database.\n>>> ");
   });
 })
@@ -40,11 +52,11 @@ describe("Testing of EXP api", () => {
 
 describe("Testing of DEL api", () => {
   it("it should return data not deleted.", async () => {
-    let var1 = "SET hello:testing"
-    await setData(var1);
-    var1 = "DEL hello"
-    const res = await delData(var1);
-    expect(res).toEqual('Data not exists.\n>>> ')
+    let var1 = "SET hii testing"
+    setData(var1);
+    var1 = "DEL hii"
+    const res = delData(var1);
+    expect(res).toEqual('Data removed from database.\n>>> ')
   });
 })
 
@@ -53,7 +65,36 @@ describe("Testing of DEL api", () => {
 describe("Testing of SAVE api", () => {
   it("it should save the data in Disk storage.", async () => {
     let var1 = "SAVE"
-    const res = await saveData(var1);
+    const res = saveData(var1);
     expect(res).toEqual("Data saved in Disk.\n>>> ")
+  });
+})
+
+
+// pop the last data in a list
+
+describe("Testing of lpop api", () => {
+  it("it should pop the last data in list.", async () => {
+    let var1 = "lpush hello testing"
+    lpush(var1);
+    let var2 = "lpush hello testing1"
+    lpush(var2);
+    let var3 = "lpop hello" 
+    let res2 = await lpop(var3)
+    expect(res2).toEqual("testing1");
+  });
+})
+
+// display the data of a list
+
+describe("Testing of lrange api", () => {
+  it("it should display the last data of list.", async () => {
+    let var1 = "lpush test range"
+    lpush(var1);
+    let var2 = "lpush test range2"
+    lpush(var2);
+    let var3 = "lrange test 0 2" 
+    let res2 = lrange(var3)
+    expect(res2).toEqual("range\nrange2\n");
   });
 })
