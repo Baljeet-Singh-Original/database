@@ -16,26 +16,22 @@ describe("Testing of SET api", () => {
   });
 })
 
-// set the data as a list
-
-describe("Testing of lpush api", () => {
-  it("it should save the data in list.", async () => {
-    let var1 = "lpush hello testing"
-    const res = lpush(var1);
-    expect(res).toEqual("Data saved in Database.\n>>> ");
-  });
-})
 
 // get the data
 
 describe("Testing of GET api", () => {
-  it("it should return data not exists yet.", async () => {
+  it("it should return data.", async () => {
     let var2 = "SET hello Hii"
     setData(var2)
     let var1 = "GET hello"
     let res = await getData(var1);
     expect(res).toEqual("Hii");
   });
+  it("it should return a error of not existance.", async() => {
+    let var1 = "GET hii"
+    let res = await getData(var1);
+    expect(res).toEqual("Data not exists.");
+  })
 })
 
 // adding expire time of data 
@@ -46,30 +42,56 @@ describe("Testing of EXP api", () => {
     const res = expData(var1);
     expect(res).toEqual("Expire-time saved in Database.\n>>> ");
   });
-})
-
-// deleting the data 
-
-describe("Testing of DEL api", () => {
-  it("it should return data not deleted.", async () => {
-    let var1 = "SET hii testing"
-    setData(var1);
-    var1 = "DEL hii"
-    const res = delData(var1);
-    expect(res).toEqual('Data removed from database.\n>>> ')
+  // it("it will return the data is expired now", async () => {
+    //   let var1 = "SET hello hii"
+    //   setData(var1)
+    //   var1 = "EXP hello 3000"
+    //   expData(var1)
+    //   setTimeout(() => {
+      //     var1 = "GET hello"
+      //     const res1 = await getData(var1)
+      //     expect(res1).toEqual("Expire-time saved in Database.\n>>> ")
+      //   });
+      // })
+    })
+    
+    // deleting the data 
+    
+    describe("Testing of DEL api", () => {
+      it("it should return data not deleted.", async () => {
+        let var1 = "SET hii testing"
+        setData(var1);
+        var1 = "DEL hii"
+        const res = delData(var1);
+        expect(res).toEqual('Data removed from database.\n>>> ')
+      });
+      it("it will return data not found.", async () => {
+        let var1 = "GET hii"
+        const res1 = getData(var1)
+        expect(res1).toEqual("Data not exists.")
+      })
+    })
+    
+    // saving data in disk
+    
+    describe("Testing of SAVE api", () => {
+      it("it should save the data in Disk storage.", async () => {
+        let var1 = "SAVE"
+        const res = saveData(var1);
+        expect(res).toEqual("Data saved in Disk.\n>>> ")
+      });
+    })
+    
+    
+// set the data as a list
+    
+describe("Testing of lpush api", () => {
+  it("it should save the data in list.", async () => {
+    let var1 = "lpush hello testing"
+    const res = lpush(var1);
+    expect(res).toEqual("Data saved in Database.\n>>> ");
   });
 })
-
-// saving data in disk
-
-describe("Testing of SAVE api", () => {
-  it("it should save the data in Disk storage.", async () => {
-    let var1 = "SAVE"
-    const res = saveData(var1);
-    expect(res).toEqual("Data saved in Disk.\n>>> ")
-  });
-})
-
 
 // pop the last data in a list
 
