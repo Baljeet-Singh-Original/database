@@ -1,6 +1,7 @@
 var fs = require('fs');
 
 var database = {}
+var expTime = {}
 
 const loadData = () => {
     fs.readFile("./db.json", "utf8", (err, jsonString) => {
@@ -10,6 +11,15 @@ const loadData = () => {
         }
         let new_json = JSON.parse(jsonString)
         database = new_json
+      });
+    
+    fs.readFile("./expTime.json", "utf8", (err, jsonExp) => {
+        if (err) {
+          console.log("File read failed:", err);
+          return;
+        }
+        let new_exp = JSON.parse(jsonExp)
+        expTime = new_exp
       });
 }
 
@@ -30,8 +40,9 @@ const setData = (var1) => {
             }
             key = key.trim()
             value = value.trim()
+            database[key] = value
             let timer = Date.now()+9999999999
-            database[key] = [value, timer]
+            expTime[key] = timer
             return ("Data saved in Database.\n>>> ")
 }
 
@@ -42,10 +53,11 @@ const getData = (var1) => {
             }
             param1 = param1.trim()
             if (database[param1]) {
-                if (database[param1][1] > Date.now()) {
-                    return (database[param1][0])
+                if (expTime[param1] > Date.now()) {
+                    return (database[param1])
                 }else {
                     delete database[param1]
+                    delete expTime[param1]
                     return ("Your Data is expired and no longer saved here.")
                 }
             } else {
@@ -61,6 +73,7 @@ const delData = (var1) => {
             param1 = param1.trim()
             if (database[param1]) {
                 delete database[param1]
+                delete expTime[param1]
                 return ("Data removed from database.\n>>> ")
             } else {
                 return ('Data not exists.\n>>> ')                
@@ -84,7 +97,7 @@ const expData = (var1) => {
             }
             key = key.trim()
             timer = parseInt(timer.trim())+Date.now()
-            database[key][1] = timer
+            expTime[key] = timer
             return ("Expire-time saved in Database.\n>>> ")
 }
 
@@ -113,6 +126,8 @@ const lpush = (var1) =>{
         let index = database[key].length
         database[key][index] = value
     }
+    let timer = Date.now()+9999999999
+    expTime[key] = timer
     return ("Data saved in Database.\n>>> ")
 }
 
@@ -146,6 +161,11 @@ const lrange = (var1) => {
     key = key.trim()
     value = parseInt(value.trim())
     value1 = parseInt(value1.trim())
+    if (expTime[key] < Date.now()) {
+        delete database[key]
+        delete expTime[key]
+        return ("Your Data is expired and no longer saved here.")
+    }
     if (!database[key]) {
         return ("Data not exists.\n")
     }
@@ -180,8 +200,12 @@ const lpop = (var1) => {
 }
 
 const saveData = (var1) => {
-    jsonData = JSON.stringify(database)
-            fs.writeFile('./db.json', jsonData, function (err) {
+    dbData = JSON.stringify(database)
+            fs.writeFile('./db.json', dbData, function (err) {
+            if (err) throw err;
+        });
+    jsonData = JSON.stringify(expTime)
+            fs.writeFile('./expTime.json', jsonData, function (err) {
             if (err) throw err;
         });
         return ("Data saved in Disk.\n>>> ")
